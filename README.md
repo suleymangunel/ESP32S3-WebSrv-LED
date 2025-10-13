@@ -14,14 +14,16 @@ Features:
 - Wi-Fi connectivity via ESP-IDF
 - Fully compatible with ESP-IDF 5.5+
 
-Overview
-When you flash the firmware:
+
+Overview:
+When you flash the firmware
 - The ESP32-S3 connects to your Wi-Fi network.
 - LVGL initializes and displays a UI using your custom TTF font.
 - Touch events are read from the XPT2046 controller and displayed.
 - The WS2812 LED changes state when you touch or send HTTP requests.
 - You can open the device IP (e.g. http://192.168.1.42/) and interact remotely.
 It’s a small but complete example of embedded HMI + IoT design.
+
 
 Hardware Setup:
 - Component	Interface	Description
@@ -31,6 +33,7 @@ Hardware Setup:
 - WS2812 LED	RMT	One or more LEDs
 - Wi-Fi	2.4 GHz	SSID/PASS configurable (codebehind)
 Pin assignments can be customized in main.c or via menuconfig.
+
 
 Custom Font Support:
 This demo also includes custom TTF font support for LVGL, allowing you to use your own typography instead of default built-in fonts.
