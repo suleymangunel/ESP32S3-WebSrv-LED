@@ -1,5 +1,5 @@
 // main.c – ESP32-S3 + ILI9341 (SPI) + LVGL + WiFi Web Server
-// Web sayfasında buton ile koordinat gösterme ve LED kontrolü
+// Coordinate display and LED control via buttons on the web page
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -18,25 +18,25 @@
 #include "esp_lcd_touch_xpt2046.h"
 #include "fonts/ink_free_12.h"
 
-// WiFi ve HTTP server için
+// WiFi & HTTP server
 #include <string.h>
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "nvs_flash.h"
 #include "esp_http_server.h"
 
-// WS2812 RGB LED için
+// WS2812 RGB LED
 #include "driver/rmt_tx.h"
 #include "led_strip_encoder.h"
 #include "esp_random.h"
 
 #define TAG "ILI9341_DEMO"
 
-// WiFi ayarları
+// WiFi settings
 #define WIFI_SSID "SSID"
 #define WIFI_PASS "PASS"
 
-// LCD pinleri
+// LCD pin definitions
 #define PIN_NUM_MISO 13
 #define PIN_NUM_MOSI 11
 #define PIN_NUM_CLK  12
@@ -45,14 +45,14 @@
 #define PIN_NUM_RST   9
 #define PIN_NUM_BCKL  7
 
-// Touch pinleri
+// Touch pin definitions
 #define TP_CS   5
 #define TP_IRQ  14
 
-// WS2812 RGB LED için
-#define LED_GPIO 48  // Kartınızda 8 olabilir, kontrol edin
+// WS2812 RGB LED pin definitions
+#define LED_GPIO 48  // There may be an 8 on your ESP32 board, check it
 #define RMT_RES_HZ (10 * 1000 * 1000)  // 10 MHz
-#define LED_COUNT 1  // Tek WS2812
+#define LED_COUNT 1  // Single WS2812
 
 #define LCD_HRES 240 //320: For horizontal display (CH01)
 #define LCD_VRES 320 //240: For horizontal display (CH01)
@@ -67,24 +67,24 @@ static QueueHandle_t gpio_evt_queue = NULL;
 static lv_obj_t *coord_label = NULL;
 static httpd_handle_t server = NULL;
 
-static lv_obj_t *label = NULL;  // WiFi durumu için label
-static char ip_address_str[32] = "IP: Bekleniyor...";  // IP adresi string'i
+static lv_obj_t *label = NULL;  // WiFi state label
+static char ip_address_str[32] = "IP: Waiting...";  // IP address string
 
-// WS2812 için RMT handle'ları
+// WS2812 RMT handle
 static rmt_channel_handle_t rmt_chan = NULL;
 static rmt_encoder_handle_t led_encoder = NULL;
 
-// WS2812 LED kontrol fonksiyonu
+// WS2812 LED control
 static void set_led_state(bool on) {
     uint8_t grb[3 * LED_COUNT] = {0};
     
     if (on) {
-        // KIRMIZI YAK: GRB -> (G=0, R=50, B=0)
+        // RED: GRB -> (G=0, R=50, B=0)
         grb[0] = 0;   // Green
         grb[1] = 50;  // Red
         grb[2] = 0;   // Blue
     } else {
-        // KAPAT: (0,0,0)
+        // OFF: (0,0,0)
         grb[0] = grb[1] = grb[2] = 0;
     }
     
@@ -93,10 +93,10 @@ static void set_led_state(bool on) {
     ESP_LOGI(TAG, "LED %s", on ? "ON" : "OFF");
 }
 
-// Web sayfası HTML (JavaScript ile mouse/touch events)
+// Web page HTML (JavaScript mouse/touch events)
 static const char* html_page = 
 "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-"<title>Touch Koordinat</title>"
+"<title>Touch Coordinate</title>"
 "<style>"
 "body{font-family:Arial;text-align:center;margin-top:50px;background:#f0f0f0}"
 "h1{color:#333}"
@@ -109,22 +109,22 @@ static const char* html_page =
 ".status{font-size:18px;color:#666;margin-top:20px}"
 "</style>"
 "</head><body>"
-"<h1>ESP32-S3 Dokunma Koordinatları</h1>"
+"<h1>ESP32-S3 Touch Coordinates</h1>"
 "<button id='btn' "
 "onmousedown='btnPress()' onmouseup='btnRelease()' onmouseleave='btnRelease()' "
 "ontouchstart='btnPress()' ontouchend='btnRelease()' ontouchcancel='btnRelease()'>"
-"Basılı Tut - LED Yansın"
+"Press and Hold – LED On"
 "</button>"
 "<div class='coord' id='coordX'>X: --</div>"
 "<div class='coord' id='coordY'>Y: --</div>"
-"<div class='status' id='status'>Butona basın...</div>"
+"<div class='status' id='status'>Press button...</div>"
 "<script>"
 "let isPressed = false;"
 "function btnPress(){"
 "  if(isPressed) return;"
 "  isPressed = true;"
 "  document.getElementById('btn').classList.add('pressed');"
-"  document.getElementById('status').innerText='LED YANIYOR...';"
+"  document.getElementById('status').innerText='LED is ON...';"
 "  fetch('/led?state=on');"
 "  fetch('/coords')"
 "  .then(r=>r.json())"
@@ -143,16 +143,16 @@ static const char* html_page =
 "</script>"
 "</body></html>";
 
-// Ana sayfa handler
+// Main page handler
 static esp_err_t root_handler(httpd_req_t *req) {
     httpd_resp_send(req, html_page, strlen(html_page));
     return ESP_OK;
 }
 
-// Koordinat JSON endpoint
+// Coordinate JSON endpoint
 static esp_err_t coords_handler(httpd_req_t *req) {
     char response[256];
-    const char* status = g_touch_pressed ? "Dokunuyor" : "Dokunma Yok";
+    const char* status = g_touch_pressed ? "Touch Detected" : "No Touch";
     
     snprintf(response, sizeof(response), 
              "{\"x\":%d,\"y\":%d,\"status\":\"%s\"}", 
@@ -163,7 +163,7 @@ static esp_err_t coords_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-// LED kontrol endpoint
+// LED control endpoint
 static esp_err_t led_handler(httpd_req_t *req) {
     char query[32];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
@@ -171,10 +171,10 @@ static esp_err_t led_handler(httpd_req_t *req) {
         if (httpd_query_key_value(query, "state", state_param, sizeof(state_param)) == ESP_OK) {
             if (strcmp(state_param, "on") == 0) {
                 set_led_state(true);
-                ESP_LOGI(TAG, "LED açıldı");
+                ESP_LOGI(TAG, "LED turned on");
             } else if (strcmp(state_param, "off") == 0) {
                 set_led_state(false);
-                ESP_LOGI(TAG, "LED kapatıldı");
+                ESP_LOGI(TAG, "LED turned off");
             }
         }
     }
@@ -189,13 +189,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         esp_wifi_connect();
     } else if (event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "IP Adresi: " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "IP Adress: " IPSTR, IP2STR(&event->ip_info.ip));
 
-        // IP adresini string'e kaydet
+        // Store IP address in string
         snprintf(ip_address_str, sizeof(ip_address_str), 
                  "IP: " IPSTR, IP2STR(&event->ip_info.ip));
 
-                 // LVGL label'ı güncelle
+                 // Update LVGL label
         if (label != NULL) {
             lvgl_port_lock(0);
             lv_label_set_text(label, ip_address_str);
@@ -231,7 +231,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
-// WiFi başlat
+// WiFi on
 static void wifi_init(void) {
     esp_netif_init();
     esp_event_loop_create_default();
@@ -319,17 +319,17 @@ static void touch_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
 }
 
 void app_main(void) {
-    // NVS başlat (WiFi için gerekli)
+    // Start NVS (Requires for WiFi)
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
         nvs_flash_init();
     }
     
-    // WS2812 RGB LED için RMT ayarla
+    // WS2812 RGB LED RMT set
     ESP_LOGI(TAG, "WS2812 LED başlatılıyor (GPIO %d)...", LED_GPIO);
     
-    // 1) RMT TX kanalını oluştur
+    // 1) Create RMT TX channel
     rmt_tx_channel_config_t tx_cfg = {
         .gpio_num = LED_GPIO,
         .clk_src = RMT_CLK_SRC_DEFAULT,
@@ -340,23 +340,23 @@ void app_main(void) {
     };
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_cfg, &rmt_chan));
     
-    // 2) WS2812 için encoder oluştur
+    // 2) Create encoder for WS2812
     led_strip_encoder_config_t enc_cfg = {
         .resolution = RMT_RES_HZ,
     };
     ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&enc_cfg, &led_encoder));
     
-    // 3) Kanalı etkinleştir
+    // 3) Activate channel
     ESP_ERROR_CHECK(rmt_enable(rmt_chan));
     
-    // LED'i başlangıçta kapat
+    // Turn off the LED at startup
     uint8_t grb[3] = {0, 0, 0};
     rmt_transmit_config_t tx_conf = { .loop_count = 0 };
     rmt_transmit(rmt_chan, led_encoder, grb, sizeof(grb), &tx_conf);
     
     ESP_LOGI(TAG, "WS2812 LED hazır!");
     
-    // WiFi başlat
+    // WiFi on
     wifi_init();
     
     // SPI bus
@@ -504,6 +504,6 @@ void app_main(void) {
     lv_obj_set_pos(coord_label, 4, 4);
     lvgl_port_unlock();
 
-    ESP_LOGI(TAG, "Sistem hazır!");
-    ESP_LOGI(TAG, "Browser'da IP adresini yazın");
+    ESP_LOGI(TAG, "System Ready!");
+    ESP_LOGI(TAG, "Enter the IP address in your browser");
 }
