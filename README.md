@@ -42,15 +42,21 @@ Steps
 - Use LVGL’s online font converter for LVGL v9.x or off line converter script "lv_font_conv" for LVGL v8.x
 - Select your .ttf file, choose size (e.g. 18 px or 24 px), and character range (0x20–0x7F for ASCII or full Unicode if needed).
 - Export as C file (.c) and download it.
-- LVGL v8.x cmd: lv_font_conv --font /System/Library/Fonts/Supplemental/Skia.ttf --size 24 --bpp 4 --format 
-                 lvgl --no-compress --range 0x20-0x7F,0xC7,0xE7,0x11E,0x11F,0x130,0x131,0xD6,0xF6,0x15E,0x15F,0xDC,0xFC --output 
-                 main/fonts/ink_free_12.c
+- LVGL v8.x cmd:
+```
+  lv_font_conv --font /System/Library/Fonts/Supplemental/Skia.ttf --size 24 --bpp 4 --format 
+  lvgl --no-compress --range 0x20-0x7F,0xC7,0xE7,0x11E,0x11F,0x130,0x131,0xD6,0xF6,0x15E,0x15F,0xDC,0xFC --output 
+  main/fonts/ink_free_12.c
+```
 - Fix a known field for LVGL v8: remove that line
+  ```
   .static_bitmap = 0,
+  ```
 - Copy the generated .c file (e.g. roboto_18.c) into your main/fonts folder.
 - Create header file:
-  #ifndef INK_FREE_12_H
   
+  ```
+  #ifndef INK_FREE_12_H
   #define INK_FREE_12_H
   #ifdef __cplusplus
   extern "C" {
@@ -61,22 +67,33 @@ Steps
   } /*extern "C"*/
   #endif
   #endif /*INK_FREE_12_H*/
+  ```
 - run "idf.py menuconfig" and uncheck "Component config -> LVGL configuration -> uncheck this to use custom lv_conf.h"
 - Copy components/lvgl/lv_conf_template.h to components/lvgl/lv_conf.h
 - edit lv_conf.h:
+  ```
   /* clang-format off */
   #if 0 /*Set it to "1" to enable content"*/
+  ```
   change to
+  ```
   #if 1 /*Set it to "1" to enable content"*/
+  ```
 - Update this line:
+  ```
   #define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(ink_free_12)
+  ```
 - Add the font to your project (FONTS direcotry and include line
 - Include the font in your main source (in this project: main.c):
+  ```
   #include "fonts/ink_free_12.h"
+  ```
 - USe the font in LVGL:
+  ```
   lv_obj_t *title = lv_label_create(lv_scr_act());
   lv_label_set_text(title, "Hello, ESP32-S3!");
   lv_obj_set_style_text_font(title, &ink_free_12, 0);
+  ```
   
 License:
 Licensed under the Apache License 2.0.
