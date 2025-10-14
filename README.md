@@ -1,4 +1,4 @@
-# ESP32S3-ili9341-lvgl-touch-ws2812-webserver-custfont
+# ESP32-S3 demo: ILI9341 + LVGL + XPT2046 touch, WS2812 LED, and a minimal HTTP server (ESP-IDF 5.x).
 
 ESP32-S3 LVGL Touch & Web Demo
 A complete ESP-IDF 5.x project that turns your ESP32-S3 board into a small, interactive touchscreen device — with a beautiful LVGL GUI, custom fonts, touch input, a WS2812 LED, and a built-in web server.
