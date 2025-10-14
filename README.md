@@ -43,11 +43,11 @@ Steps
 - Select your .ttf file, choose size (e.g. 18 px or 24 px), and character range (0x20–0x7F for ASCII or full Unicode if needed).
 - Export as C file (.c) and download it.
 - LVGL v8.x cmd:
-```
+  ```
   lv_font_conv --font /System/Library/Fonts/Supplemental/Skia.ttf --size 24 --bpp 4 --format 
   lvgl --no-compress --range 0x20-0x7F,0xC7,0xE7,0x11E,0x11F,0x130,0x131,0xD6,0xF6,0x15E,0x15F,0xDC,0xFC --output 
   main/fonts/ink_free_12.c
-```
+  ```
 - Fix a known field for LVGL v8: remove that line
   ```
   .static_bitmap = 0,
