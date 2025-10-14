@@ -50,6 +50,7 @@ Steps
 - Copy the generated .c file (e.g. roboto_18.c) into your main/fonts folder.
 - Create header file:
   #ifndef INK_FREE_12_H
+  
   #define INK_FREE_12_H
   #ifdef __cplusplus
   extern "C" {
