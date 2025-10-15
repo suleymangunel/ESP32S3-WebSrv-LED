@@ -39,6 +39,7 @@ Custom Font Support:
 This demo also includes custom TTF font support for LVGL, allowing you to use your own typography instead of default built-in fonts.
 Steps
 - Convert a TTF to an LVGL font C file
+- The key point here is that whether you’re using LVGL v8 or v9, you must not enable compression when converting the font — always use the --no-compress option.
 - Use LVGL’s online font converter for LVGL v9.x or off line converter script "lv_font_conv" for LVGL v8.x
 - Select your .ttf file, choose size (e.g. 18 px or 24 px), and character range (0x20–0x7F for ASCII or full Unicode if needed).
 - Export as C file (.c) and download it.
