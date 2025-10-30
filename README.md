@@ -89,7 +89,7 @@ Steps
   ```
   #include "fonts/ink_free_12.h"
   ```
-- USe the font in LVGL:
+- Use the font in LVGL:
   ```
   lv_obj_t *title = lv_label_create(lv_scr_act());
   lv_label_set_text(title, "Hello, ESP32-S3!");
