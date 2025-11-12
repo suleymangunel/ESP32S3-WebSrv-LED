@@ -1,7 +1,15 @@
+<div class="sag">
+    <th><img alt="GitHub License" src="https://img.shields.io/github/license/suleymangunel/ePaperV2?label=License&style=plastic"></th>
+    <th><img alt="Static Badge" src="https://img.shields.io/badge/Language-C-red?style=plastic"></th>
+    <th><img alt="Static Badge" src="https://img.shields.io/badge/Platform-ESP32%2FS3-blue?style=plastic"></th>
+    <th><img alt="Static Badge" src="https://img.shields.io/badge/Framework-ESP%E2%94%80IDF-white?style=plastic"></th>
+    <th><img alt="Static Badge" src="https://img.shields.io/badge/OS-FreeRTOS-black?style=plastic"></th>
+</div>
+
 # ESP32-S3 demo: ILI9341 + LVGL + XPT2046 touch, WS2812 LED, and a minimal HTTP server (ESP-IDF 5.x).
 
-ESP32-S3 LVGL Touch & Web Demo
-A complete ESP-IDF 5.x project that turns your ESP32-S3 board into a small, interactive touchscreen device — with a beautiful LVGL GUI, custom fonts, touch input, a WS2812 LED, and a built-in web server.
+## Description
+>A complete ESP-IDF 5.x project that turns your ESP32-S3 board into a small, interactive touchscreen device — with a beautiful LVGL GUI, custom fonts, touch input, a WS2812 LED, and a built-in web server.
 It’s a hands-on example of combining display, touch, network, and LED control — everything an embedded UI engineer loves.
 
 Features:
